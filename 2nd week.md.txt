@@ -1,0 +1,191 @@
+﻿##### MYSQL
+ORACLE과 다른 사용방법
+show databases;
+--데이터베이스 보기
+use madang;
+--데이베이스 사용
+show tables;
+--테이블 상태보기
+
+````
+select abs(-78), abs(+78)
+from dual;
+--절댓값
+select round(4.875, 1)
+from dual;
+--소수점 1의 자리까지 나타내면서 반올림
+select bookname "제목", length(bookname) "글자수", lengthb(bookname) "바이트수"
+from book
+where publisher = '굿스포츠';
+
+/*view : 가상의 테이블*/
+/*
+질의구문으로만 이루어진 가상의 테이블
+실제 데이터는 없음
+단순뷰 - 뷰생성 서브쿼리에 조인 조건없이 1개의 테이블로부터 생성되는 뷰
+복합뷰 - 뷰생성 서브쿼리에 여러 개의 테이블이 조인되어 생성되는 뷰
+인라인뷰 - 해당 질의에서만 필요한 뷰일 경우 from절에서 서브쿼리를 바로 적어서 사용하는 뷰
+--insert가 불가한 view의 생성
+create [or replace] view view_name
+as
+    subquery
+    [with read only]
+*/
+--원본테이블 생성
+create table o_tbl(a number, b number, c number);
+
+create or replace view view1
+as
+    select a, b
+    from o_tbl;
+
+insert into view1 values(1, 2);
+
+select * from o_tbl;
+select * from view1;
+
+update o_tbl set b = 1 where a = 1;
+
+create or replace view view2
+as
+    select a, b
+    from o_tbl    
+with read only;
+
+insert into view2 values(99, 99);
+select * from view2;
+
+select *from user_views;
+select * from tabs;
+
+create or replace view view1
+as
+    select a, c
+    from o_tbl;
+
+select * from view1;
+
+create view vw_customer
+as select *
+    from customer
+    where address like '%대한민국%';
+    
+create view vw_orders (orderid, custid, name, bookid, bookname, saleprice, orderdate)
+as select od.orderid, od.custid, cs.name,
+    od.bookid, bk.bookname, od.saleprice, od.orderdate
+    from orders od, customer cs, book bk
+    where od.custid = cs.custid and od.bookid = bk.bookid;
+
+create or replace view vw_customer (custid, name, address)
+as select custid, name, address
+    from customer
+    where address like '%영국%';
+    
+drop view vw_customer;
+
+----------------------------------------------------------------------------------
+/*인덱스*/
+create table test(no number);
+
+begin
+for i in 1..10000 loop
+    insert into test values(i);
+    end loop;
+    commit;
+end;
+/
+--/가 있어서 한 줄 씩 실행이 되지 않고 begin~end가 한번에 실행됨
+select * from test
+where no = 9999;
+
+create index idx_test_no on test(no);
+
+--인덱스의 상태를 조회하는 방법
+--인덱스를 흔들다 = insert를 하거나 삭제를 한다
+--주기적으로 인덱스의 발란스를 맞춰줘야한다
+analyze index idx_test_no validate structure;
+
+select (del_lf_rows_len / lf_rows_len) * 100 balance
+from index_stats
+where name = 'idx_test_no';
+
+select * from index_stats;
+
+delete from test
+where no between 2500 and 6500;
+
+--인덱스 리빌드
+alter index idx_test_no rebuild;
+analyze index idx_test_no validate structure;
+select (del_lf_rows_len / lf_rows_len) * 100 balance
+from index_stats
+where name = 'idx_test_no';
+````
+
+##### JAVA
+### 단항연산자
+++num
+
+### 이항연산자
+num1 + num3
+lvalue = rvalue
+변수 = 숫자식, 문자 등
+
+### 삼항연산자
+
+## 순차적처리
+변수선언
+입력
+처리
+출력
+
+### 증감연산자
+(i = i + 1) =  i++
+연산자의 위치에 따라 결과가 달라진다
+b = a++은 b에 a의 값이 대입되고 ++로 인해 a에 1이 더해진다
+결과적으로
+b = a, a = a + 1의 결과를 얻게 된다
+
+### 관계연산자의 종류
+>, <, >=, <=, ==, !=
+
+### 논리연산자
+&& 두 항이 모두 참일때 참
+|| 두 항 중 하나가 참이면 참
+! 단항 연산자로 참을 거짓으로, 거짓을 참으로 변경
+
+### 복합대입연산자
+
+A += B 두항의 값을 더해서 왼쪽항에 대입
+
+### 조건연산자(삼항연산자)
+조건식 ? 결과1: 결과2
+조건식이 참이면 결과2 조건식이 거짓이면 결과2가 선택됨
+
+### 비트연산자
+%[-][0][m][m.n]__
+__ : d 십진정수
+      b boolean
+      o 8진수
+      xX 16진수
+      e 지수형
+      c 문자
+      s 문자열
+      f 실수형
+[-] : 왼쪽정렬 빈칸은 공백으로 채워서 출력
+[0] : 0오른쪽 정렬 빈칸을 0으로 채워서 출력
+[m] : 전체자릿수
+[.n] : 소숫점이하 자릿수
+
+& 논리곱
+| 논리합
+^ 배타적
+
+### 음수표현방법
+1의 보수(부호비트를 제외한 숫자를 반전)
+2의 보수(1의 보수에 +1을 함) ->음수
+
+### 제어문
+순차적 실행
+선택제어
+반복제어

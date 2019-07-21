@@ -1,0 +1,123 @@
+﻿##### MYSQL
+ORACLE과 다른 사용방법
+show databases;
+--데이터베이스 보기
+use madang;
+--데이베이스 사용
+show tables;
+--테이블 상태보기
+
+````
+select abs(-78), abs(+78)
+from dual;
+--절댓값
+select round(4.875, 1)
+from dual;
+--소수점 1의 자리까지 나타내면서 반올림
+select bookname "제목", length(bookname) "글자수", lengthb(bookname) "바이트수"
+from book
+where publisher = '굿스포츠';
+
+/*view : 가상의 테이블*/
+/*
+질의구문으로만 이루어진 가상의 테이블
+실제 데이터는 없음
+단순뷰 - 뷰생성 서브쿼리에 조인 조건없이 1개의 테이블로부터 생성되는 뷰
+복합뷰 - 뷰생성 서브쿼리에 여러 개의 테이블이 조인되어 생성되는 뷰
+인라인뷰 - 해당 질의에서만 필요한 뷰일 경우 from절에서 서브쿼리를 바로 적어서 사용하는 뷰
+--insert가 불가한 view의 생성
+create [or replace] view view_name
+as
+    subquery
+    [with read only]
+*/
+--원본테이블 생성
+create table o_tbl(a number, b number, c number);
+
+create or replace view view1
+as
+    select a, b
+    from o_tbl;
+
+insert into view1 values(1, 2);
+
+select * from o_tbl;
+select * from view1;
+
+update o_tbl set b = 1 where a = 1;
+
+create or replace view view2
+as
+    select a, b
+    from o_tbl    
+with read only;
+
+insert into view2 values(99, 99);
+select * from view2;
+
+select *from user_views;
+select * from tabs;
+
+create or replace view view1
+as
+    select a, c
+    from o_tbl;
+
+select * from view1;
+
+create view vw_customer
+as select *
+    from customer
+    where address like '%대한민국%';
+    
+create view vw_orders (orderid, custid, name, bookid, bookname, saleprice, orderdate)
+as select od.orderid, od.custid, cs.name,
+    od.bookid, bk.bookname, od.saleprice, od.orderdate
+    from orders od, customer cs, book bk
+    where od.custid = cs.custid and od.bookid = bk.bookid;
+
+create or replace view vw_customer (custid, name, address)
+as select custid, name, address
+    from customer
+    where address like '%영국%';
+    
+drop view vw_customer;
+
+----------------------------------------------------------------------------------
+/*인덱스*/
+create table test(no number);
+
+begin
+for i in 1..10000 loop
+    insert into test values(i);
+    end loop;
+    commit;
+end;
+/
+--/가 있어서 한 줄 씩 실행이 되지 않고 begin~end가 한번에 실행됨
+select * from test
+where no = 9999;
+
+create index idx_test_no on test(no);
+
+--인덱스의 상태를 조회하는 방법
+--인덱스를 흔들다 = insert를 하거나 삭제를 한다
+--주기적으로 인덱스의 발란스를 맞춰줘야한다
+analyze index idx_test_no validate structure;
+
+select (del_lf_rows_len / lf_rows_len) * 100 balance
+from index_stats
+where name = 'idx_test_no';
+
+select * from index_stats;
+
+delete from test
+where no between 2500 and 6500;
+
+--인덱스 리빌드
+alter index idx_test_no rebuild;
+analyze index idx_test_no validate structure;
+select (del_lf_rows_len / lf_rows_len) * 100 balance
+from index_stats
+where name = 'idx_test_no';
+````
